@@ -31,6 +31,7 @@ adobe-source-code-pro-fonts
 intel-ucode
 libexif
 imlib2
+neomutt
 sdcv
 zathura
 zathura-pdf-mupdf
@@ -67,6 +68,9 @@ transmission-cli
 pcmanfm
 pandoc
 python-pip
+cairo
+sox
+r tk
 gvfs-mtp
 gnumeric
 texlive-core
@@ -82,7 +86,9 @@ arch-install-scripts
 
 py_pack=(
 numpy
+scipy
 matplotlib
+manimlib
 jupyter
 )
 
@@ -119,12 +125,12 @@ id -u $USER >/dev/null 2>&1 ||
     {
     k=(
     .suckless
-    .static
     .aur
     .scripts
     .arch
     .gnupg
     .password-store
+    .stardict
     `ls $USER`
     )
 
@@ -176,15 +182,6 @@ cd $USER
     }
 
     sudo -u $USER aur.sh ${aur_pack[@]}
-
-    [ -d .static ] &&
-    {
-    mkdir -p /usr/share/stardict/dic
-    for o in `ls .static/*.tar.bz2`
-    do
-    tar -jxvf $o -C /usr/share/stardict/dic
-    done
-    }
 }
 
 
