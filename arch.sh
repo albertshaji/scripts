@@ -55,6 +55,8 @@ n
 p
 
 
+
+p
 w
 EOF
     partprobe
