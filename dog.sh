@@ -1,34 +1,31 @@
 #!/bin/bash
 
-note_r() { dzen2 -fn "xos4 Terminus-10" -fg "#FF0000" -p 5 & beep -f 500; }
+note_r() { dzen2 -fn "xos4 Terminus-10" -fg "#FF0000" -p 5 & beep -f 450; }
 note_g() { dzen2 -fn "xos4 Terminus-10" -fg "#83BF15" -p 5 & beep -f 500; }
-note_w() { dzen2 -fn "xos4 Terminus-10" -fg "#EBDBB2" -p 5 & beep -f 500; }
+note_o() { dzen2 -fn "xos4 Terminus-10" -fg "#FFA500" -p 5 & beep -f 550; }
+note_p() { dzen2 -fn "xos4 Terminus-10" -fg "#EE82EE" -p 5 & beep -f 600; }
 
 case "$1" in
 +s)
     status () {
-    s=" | "
-    nm-online -t 0
-    if [ $? -eq 0 ]; then printf " W "; fi
-    printf " B$(cat /sys/class/power_supply/BAT0/capacity)"
-    if [ `cat /sys/class/power_supply/BAT0/status` = 'Charging' ]; then printf "*"; fi
-    printf "$s"
-    printf "T$((`cat /sys/class/thermal/thermal_zone0/temp`/1000))"
-    printf "$s"
-    printf "C%02d" $(top -bn1 | sed -n '/Cpu/p' | cut -c 10-11)
-    printf "$s"
-    printf "R$(free -m | awk '/^Mem/ {print $3}')"
-    printf "$s"
-    printf "U$(awk '{print int($1/3600)":"int(($1%3600)/60)}' /proc/uptime)"
-    printf "$s"
-    printf "$(date +"%a %d %b %Y %I:%M %p")"
+    printf " "
+    nm-online -t 0 && printf "W  "
+    printf "B$(cat /sys/class/power_supply/BAT0/capacity)"
+    [ `cat /sys/class/power_supply/BAT0/status` = 'Charging' ] && printf "*"
+    printf "  "
+#    printf "$((`cat /sys/class/thermal/thermal_zone0/temp`/1000))°C "
+#    printf "%02d%%  " $(top -bn1 | sed -n '/Cpu/p' | cut -c 10-11)
+#    printf "$(free -m | awk '/^Mem/ {print $3}')M  "
+#    printf "$(awk '{print int($1/3600)":"int(($1%3600)/60)}' /proc/uptime)UP  "
+    [ -f .wttr ] && printf "`<.wttr`  "
+    printf "$(date +"%A, %d %B %Y  %I:%M %p")"
     }
 
     echo "Status update started."
     while true
     do
         xsetroot -name "$(status)"
-    sleep 30s
+    sleep 30
     done &
     ;;
 
@@ -42,24 +39,20 @@ case "$1" in
         b=$(cat /sys/class/power_supply/BAT0/capacity)
         bs=$(cat /sys/class/power_supply/BAT0/status)
 
-        if [ $b -lt $b_cri ]
-        then
+        [ $b -lt $b_cri ] &&
+        {
             echo "Battery critical" | note_r
             sleep 1m
             slock &
             systemctl hibernate
-        fi
+        }
 
-        if [ $b -lt $b_low ] && [ $bs = 'Discharging' ]
-        then
-            echo "Battery low: $b %" | note_r
-        fi
+        [ $b -lt $b_low ] && [ $bs = 'Discharging' ] &&
+        echo "Battery low: $b %" | note_r
 
-        if [ $b -gt $b_max ] && [ $bs = 'Charging' ]
-        then
-            echo "Battery full" | note_g
-        fi
-    sleep 2m
+        [ $b -gt $b_max ] && [ $bs = 'Charging' ] &&
+        echo "Battery full" | note_g
+        sleep 2m
     done &
     ;;
 
@@ -70,74 +63,81 @@ case "$1" in
     while true
     do
         t=$((`cat /sys/class/thermal/thermal_zone0/temp`/1000))
-        if [ $t -gt $t_hi ]
-        then
-            echo "Temperature high: $t°C" | note_r
-        fi
+        [ $t -gt $t_hi ] &&
+        echo "Temperature high: $t°C" | note_r
 
-        if [ $t -gt $t_cri ]
-        then
+        [ $t -gt $t_cri ] &&
+        {
             sudo rtcwake -m mem -s 240
             t=$((`cat /sys/class/thermal/thermal_zone0/temp`/1000))
-            if [ $t -gt $t_cri ]
-            then
-                systemctl hibernate
-            fi
-        fi
-    sleep 2m
+            [ $t -gt $t_cri ] &&
+            systemctl hibernate
+        }
+        sleep 2m
     done &
     ;;
 
 +p)
     echo "Periodic vacations started."
-    echo "$(date)" > .plog
     gap=25m
     while true
     do
-    sleep $gap
+        sleep $gap
+        j=$(journalctl -qn 1 -t systemd-sleep -S "$(date +%R -d "-24 min")" | awk '{print $3}')
+        [ -n "$j" ] &&
+        {
+            n=$(date +%s)
+            r=$(date +%s -d "$j")
+            gap=$((1500 - n + r))
+            continue
+        }
+        gap=25m
 
-    j=$(journalctl -qn 1 -t systemd-sleep -S "$(date +%R -d "-24 min")" | awk '{print $3}')
-    if [ -n "$j" ]
-    then
-        n=$(date +%s)
-        r=$(date +%s -d "$j")
-        gap=$((1500 - n + r))s
+        echo "Clock: $(date +"%I:%M %p")" | note_o
+        che=$(date +%R)
+        sleep 1m
+        [ "$che" != "$(date +%R -d "-1 min")" ] &&
         continue
-    fi
-    gap=25m
 
-    echo "Clock: $(date +"%I:%M %p")" | note_w
-    che=$(date +%R)
-    sleep 1m
-    if [ "$che" != "$(date +%R -d "-1 min")" ]
-    then
-        continue
-    fi
-
-    b=$(xbacklight -get)
-    if ! pgrep mpv >/dev/null && [ "${b%.*}" -gt 0 ]
-    then
+        b=$(xbacklight -get)
+        ! pgrep mpv >/dev/null && [ "${b%.*}" -gt 0 ] &&
         sudo rtcwake -m mem -s 240 >/dev/null
-    fi
     done &
     ;;
 
++w)
+    echo "Weather update started."
+    delay=20
+    while true
+    do
+        sleep $delay
+        if nm-online -t 0
+        then
+            curl 'wttr.in/?format=%C+%p+%t' >.wttr 2>/dev/null
+            cat .wttr | grep -qw rain &&
+            echo "`cat .wttr`" | note_p
+            delay=15m
+        else
+            [ -f .wttr ] &&
+            test "`find .wttr -mmin +60`" &&
+            rm .wttr
+            delay=2m
+        fi
+    done &
+    ;;
 +)
     dog.sh +s
     dog.sh +b
     dog.sh +t
     dog.sh +p
+    dog.sh +w
     ;;
 
--l | ls)
+-l|ls)
     pgrep -fa "dog.sh \+"
     ;;
 
 -*)
     pkill -f "dog.sh \+${1:1:1}"
-    if [ $? -eq 0 ]
-    then
-        echo "Termination successful."
-    fi
     ;;
 esac
