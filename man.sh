@@ -17,10 +17,12 @@ ffmpeg
 vim
 )
 
-sel=`printf "%s\n" ${inputs[@]} | dmenu`
+sel=`printf "%s\n" ${inputs[@]} | dmenu` || exit
 
 {
-echo $sel
+printf "%s\n" ${inputs[@]} | grep -qw "$sel" &&
+echo "$sel:"
+
 case "$sel" in
 moc) cat << _PAGE
 
@@ -138,8 +140,8 @@ dwm) cat << _PAGE
     ^alt NUMS   : move to multiple tags
     alt p       : dmenu
     alt Tab     : toggle selected tags
-    alt cr      : bring to master
-    alt CR      : open terminal
+    alt cr      : open terminal
+    alt space   : bring to master
     alt j,k     : move windows
     alt h,l     : resize windows
     alt C       : close
@@ -151,7 +153,7 @@ dwm) cat << _PAGE
 _PAGE
 ;;
 
-zathura) at << _PAGE
+zathura) cat << _PAGE
 
     hjkl        : move
     = -         : zoom
@@ -319,10 +321,10 @@ vim) cat << _PAGE
     :q!     [without saving]
     :w      [save]
     :wq     [save quit]
-    :w name [save with file name ]
-    :w >> F [append to a file 'F']
-    :a,b w F[save lines a to b to 'F']
-    :cd %:p:h  [cd into the opened file directory]
+    :w name    [save with file name ]
+    :w >> F    [append to a file 'F']
+    :a,b w F   [save lines a to b to 'F']
+    :cd %:p:h  [change to file's directory]
                [%:p gives the full named path]
 
     ---move---
@@ -457,5 +459,8 @@ vim) cat << _PAGE
 _PAGE
 ;;
 
+*)
+    man $sel 2>/dev/null || echo "Manual not found." ;;
+
 esac
-} | dmenu -l 20
+} | dmenu -l 20 >/dev/null
