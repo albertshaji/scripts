@@ -17,11 +17,14 @@ case "$1" in
 #    printf "%02d%%  " $(top -bn1 | sed -n '/Cpu/p' | cut -c 10-11)
 #    printf "$(free -m | awk '/^Mem/ {print $3}')M  "
 #    printf "$(awk '{print int($1/3600)":"int(($1%3600)/60)}' /proc/uptime)UP  "
-    [ -f .wttr ] && printf "`<.wttr`  "
+    [ -s .wttr ] && printf "`<.wttr`  "
     printf "$(date +"%A, %d %B %Y  %I:%M %p")"
     }
 
     echo "Status update started."
+    [ -e .wttr ] &&
+    test "`find .wttr -mmin +60`" &&
+    rm .wttr
     while true
     do
         xsetroot -name "$(status)"
@@ -93,7 +96,15 @@ case "$1" in
         }
         gap=25m
 
-        echo "Clock: $(date +"%I:%M %p")" | note_o
+        h=`date +%H`
+        if [ $h -lt 12 ]; then
+          g="morning"
+        elif [ $h -lt 18 ]; then
+          g="afternoon"
+        else
+          g="evening"
+        fi
+        echo "Good $g, it's $(date +"%I:%M %p")" | note_o
         che=$(date +%R)
         sleep 1m
         [ "$che" != "$(date +%R -d "-1 min")" ] &&
@@ -107,24 +118,25 @@ case "$1" in
 
 +w)
     echo "Weather update started."
-    delay=20
+    sleep 20
     while true
     do
-        sleep $delay
         if nm-online -t 0
         then
             curl 'wttr.in/?format=%C+%p+%t' >.wttr 2>/dev/null
-            cat .wttr | grep -qw rain &&
-            echo "`cat .wttr`" | note_p
-            delay=15m
+            sleep 18m
         else
-            [ -f .wttr ] &&
-            test "`find .wttr -mmin +60`" &&
-            rm .wttr
-            delay=2m
+            [ -e .wttr ] &&
+            {
+                sleep 18m
+                nm-online -t 0 ||
+                rm .wttr
+            }
         fi
+        sleep 2m
     done &
     ;;
+
 +)
     dog.sh +s
     dog.sh +b
