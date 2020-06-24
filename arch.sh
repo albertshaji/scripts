@@ -82,7 +82,7 @@ pacstrap /mnt base linux linux-firmware grub gvim
 genfstab -U /mnt >/mnt/etc/fstab
 
 echo $disk >/mnt/disk.txt
-curl https://raw.githubusercontent.com/albertshaji/scripts/master/arch-user.sh >/mnt/arch-user.sh
+curl https://albertshaji.github.io/scripts/arch-user.sh >/mnt/arch-user.sh
 chmod +x /mnt/arch-user.sh
 
 arch-chroot /mnt

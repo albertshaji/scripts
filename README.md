@@ -7,7 +7,7 @@ Casual shell scripts (bash, zsh) to ease day to day interactions with computer, 
 - **arch.sh**, The steps from [Arch Linux instalation guide](https://wiki.archlinux.org/index.php/installation_guide) made into a script. Executed in the live boot.
 
 ```
-curl -LO https://albertshaji.github.io/arch.sh
+curl -LO https://albertshaji.github.io/scripts/arch.sh
 sh arch.sh
 ```
 
