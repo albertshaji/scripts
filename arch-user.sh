@@ -9,6 +9,7 @@ HOSTNAME="arch"
 TIMEZONE="Asia/Kolkata"
 
 arch_pack=(
+linux-headers
 base-devel
 networkmanager
 ranger
@@ -25,6 +26,7 @@ xorg-xev
 zsh
 git
 man
+man-pages
 terminus-font
 noto-fonts
 adobe-source-code-pro-fonts
@@ -131,6 +133,8 @@ id -u $USER >/dev/null 2>&1 ||
     .gnupg
     .password-store
     .stardict
+    .vimtex
+    .vim
     `ls $USER`
     )
 
@@ -190,6 +194,7 @@ cd $USER
     echo
     echo "Create password for Root."
     passwd
+    echo
     echo "Create password for" $USER.
     passwd $USER
     echo

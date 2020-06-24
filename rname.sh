@@ -1,7 +1,12 @@
 #!/bin/zsh
 
-[ -n "$1" ] || exit
+[ -n "$1" ] ||
+{
+    echo "Usage: `basename $0` DIR [.FORMAT]"
+    exit
+}
 cd "$1" || exit
+
 ext=${2:-.jpg}
 
 new=(`seq -s " " -f %03g$ext 1 $(ls | wc -l)`)

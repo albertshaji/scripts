@@ -24,6 +24,6 @@ do
     deploy ".arch/$f" "$t"
 done
 
-deploy "a/bmarks" ".config/BraveSoftware/Brave-Browser/Default/Bookmarks"
-deploy "a/rclone" ".config/rclone/rclone.conf"
+deploy "doc/.bmarks" ".config/BraveSoftware/Brave-Browser/Default/Bookmarks"
+deploy "doc/.rclone" ".config/rclone/rclone.conf"
 deploy ".scripts/sxiv.sh" ".config/sxiv/exec/key-handler"

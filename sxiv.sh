@@ -6,13 +6,13 @@ do
         "d")
                 mv "$file" ~/.local/share/Trash/files ;;
         "m")
-                mv --backup=t "$file" ~/pic/ALLNEW ;;
+                mv --backup=t "$file" ~/pic/ADDED ;;
+        "c")
+                cp --backup=t "$file" ~/pic/ADDED ;;
         "r")
                 convert -rotate 90 "$file" "$file" ;;
         "R")
                 convert -rotate -90 "$file" "$file" ;;
-        "y")
-                echo -n "$file" | xclip -selection clipboard ;;
         "w")
                 feh -z --bg-fill "$file" ;;
         esac

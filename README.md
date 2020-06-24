@@ -18,7 +18,7 @@ sh arch.sh
 When you are not using any full desktop environment (like Xfce, GNOME, KDE), alternately employing [suckless](https://suckless.org/) programs like `dwm`, which is just a window manager. So this script bridges the missing pieces from a desktop environment by managing background process like the following:
 
 - `b`, Checks battery status and notifies the user to take necessary action. Hibernates in critical conditions.
-- `s`, Display and update *battery*, *temperature*, *cpu*, *ram*, *up time*, *date time* status.
+- `s`, Display and update *battery*, *cpu*, *ram*, *up-time*, *weather*, *date time* status.
 - `t`, Checks temperature and notifies during peaks and runs sleep/wakeup actions to keep the temperature under control.
 - `p`, This forces the user to take frequent breaks by periodically sleeping and waking system for a few minutes.
 
@@ -56,10 +56,11 @@ Mount/Unmount block devices, like Pendrive, Hard disk. One argument "+/-" is pas
 - **config.sh**, Used to backup and deploy configuration files found in [arch repo](https://github.com/albertshaji/arch)
 - **sxiv.sh**, Key handlers for suckless image viewer program. Example, move to trash, rotate, set as wallpaper, etc.
 - **aur.sh**, A straightforward script to install and update packages from "Arch User Repository".
-- **man.sh**, Similar output as of `man` command, but a filtered/modified list of commands and key bindings that I use. It may not qualify as a script but made into a script for modular use.
-- **words.sh**, Quickly find meaning of a word! Integrating `sdcv` dictionary program and words list with `dmenu` interface.
+- **man.sh**, Similar output as of `man` command, but a filtered/modified list of commands and key bindings. It's a reference document made into a script for modular and interactive usage via `dmenu`.
+- **words.sh**, Quickly find word meaning! Integrating `sdcv` dictionary program and words list with `dmenu` interface.
+- **speak.sh**, Pronounce the last word searched in the dictionary using `flite`.
 - **alarm.sh**, Tiny alarm script using `sleep` delay and `dzen` notification.
-- **screenshot.sh**, Take screenshots and manage their file names in sequence avoiding conflict.
+- **screenshot.sh**, Take screenshots and manage their names in sequence avoiding conflict.
 - **[p/t/b]toggle.sh**, Touchpad State (Enable/Disable), Screen Temperature (Warm/Cold), Screen Brightness (Zero/Average) Respectively.
 
 ## Reference
