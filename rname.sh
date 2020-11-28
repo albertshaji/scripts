@@ -20,6 +20,6 @@ from=(`printf "%s\n" $old $com | sort | uniq -u`)
 i=1
 for n in $to
 do
-    mv -vi $from[$i] $n
+    mv -vi "$from[$i]" "$n"
     i=$((i+1))
 done

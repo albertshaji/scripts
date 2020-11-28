@@ -161,7 +161,7 @@ zathura) cat << _PAGE
     d f <F5>    : dual full presentation
     a s         : height-fit width-fit
     tab         : open index
-    <num>g      : go to page
+    nG          : go to nth page
     / n N       : search, cycle
     i           : black
     r           : rotate
@@ -175,8 +175,8 @@ git) cat << _PAGE
     config --global user.name 'albert'
     remote add origin <full-url>
     init                [creates .git dir]
-    clone repo-name     [make local copy]
-    add FILEname        [FILES to be committed]
+    clone RRPO-NAME     [make local copy]
+    add FILENAME        [FILES to be committed]
     commit -m 'message' [use --amend to edit commit msg]
     push origin master  [push to server]
     diff                [show changes after last commit]
@@ -228,7 +228,8 @@ tools) cat << _PAGE
     date +"%d-%m-%y"           [%A day %I hour %M min]
     cal mm yyyy                [use -A2 -B2]
     fdisk 'dev-name'           [list options, -l list]
-    mkfs.ext4 'dev-name/part'  [format partition]
+    mkfs.ext4 sdb1 -L NAME     [make ext4 partition]
+    mkfs.ntfs sdb1 -f -L NAME  [make ntfs partition]
     mount dev/sdc1 media/usb   [usb dir must exist]
     unmount media/usb_dir      [unmount]
     zip -r FILE.zip DIR        [compress DIR]
@@ -318,6 +319,7 @@ vim) cat << _PAGE
 
     ---document---
     :q      [quit]
+    :e FILE [open]
     :q!     [without saving]
     :w      [save]
     :wq     [save quit]
@@ -345,6 +347,7 @@ vim) cat << _PAGE
     ^e ^y   [scroll]
     ^u ^d   [page]
     gg G    [beginning end]
+    backtick. [jump to last edit location]
 
 
     ---select---
@@ -375,6 +378,8 @@ vim) cat << _PAGE
     J       [text wrap]
     [try 0 $ ^ ( ) { } g G]
     [same works for 'c' and 'y']
+    sort
+    sort! forreverse sort
 
 
     ---insert---

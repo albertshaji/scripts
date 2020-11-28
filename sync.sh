@@ -6,7 +6,7 @@ v=$1
 
 if [ "${1:1:1}" = 'M' ]
 then
-    r='.mtp/Samsung SD card/'
+    r=$M'/'
 else
     r='main:'
 fi
@@ -15,16 +15,16 @@ shift
 while [ ! $# -eq 0 ]
 do
     case "$1" in
-log)
-    tail -n 10 .rlog
+-l)
+    tail -n 10 .rlog | tac
     return ;;
 
-all)
+-a)
     d=($(cat ~/doc/.sync))
     break ;;
 
 -n)
-    d='doc/notes'
+    d=$N
     r='next:'
     break ;;
 

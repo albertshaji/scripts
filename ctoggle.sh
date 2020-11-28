@@ -2,9 +2,9 @@
 
 if [ -e .ct ]
 then
-    redshift -P -O 5000 >/dev/null
+    redshift -x >/dev/null
     rm .ct
 else
-    redshift -x >/dev/null
+    redshift -P -O 5000 >/dev/null
     touch .ct
 fi

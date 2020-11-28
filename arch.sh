@@ -1,40 +1,41 @@
 #!/bin/bash
 
+KERNEL=linux-lts
+
 [ `whoami` != 'root' ] && exit
 [ -e /sys/firmware/efi/efivars ] && exit
-timedatectl set-ntp true
 
+timedatectl set-ntp true
 
 echo "Welcome!"
 echo
 lsblk
 echo
-read -p "Select Disk: " disk
+read -p "Select Disk: " DISK
 echo
-[ -z "$disk" ] && exit
-disk=/dev/`basename $disk`
+[ -z "$DISK" ] && exit
+DISK=/dev/`basename $DISK`
 d=`lsblk -dpn | awk '{print $1}'`
-echo $d | grep -q -w $disk
+echo $d | grep -q -w $DISK
 [ $? != 0 ] && exit
 
-
-echo "Partitioning is Optional!"
-echo "Skip to keep \"\home\" Data."
+echo "Partitioning is an Optional Step!"
+echo "Skip this to retain \"\home\" Data."
 echo
 read -p "Partition? [n]/y: " -n 1
 echo
 
 [[ $REPLY = 'y' ]] &&
 {
-    echo "Entire data in [$disk] will be lost!"
+    echo "$DISK is about to be formated!"
     echo
     read -p "Confirm? [n]/y: " -n 1
     echo
 
     [[ $REPLY = 'y' ]] &&
     {
-    wipefs -fa $disk
-cat <<EOF | fdisk $disk -W always
+    wipefs -fa $DISK
+cat <<EOF | fDISK $DISK -W always
 o
 n
 p
@@ -60,31 +61,34 @@ p
 w
 EOF
     partprobe
-    yes | mkfs.ext4 ${disk}4
+    yes | mkfs.ext4 ${DISK}4
     }
 }
 
-
-yes | mkfs.ext4 ${disk}1
-yes | mkfs.ext4 ${disk}2
-mkswap ${disk}3
-
+yes | mkfs.ext4 ${DISK}1
+yes | mkfs.ext4 ${DISK}2
+mkswap ${DISK}3
 
 mkdir -p /mnt
-mount ${disk}2 /mnt
+mount ${DISK}2 /mnt
+
 mkdir -p /mnt/{boot,home}
-mount ${disk}1 /mnt/boot
-mount ${disk}4 /mnt/home
-swapon ${disk}3
+mount ${DISK}1 /mnt/boot
+mount ${DISK}4 /mnt/home
+swapon ${DISK}3
 
+pacstrap /mnt base $KERNEL ${KERNEL}-headers linux-firmware grub gvim networkmanager
 
-pacstrap /mnt base linux linux-firmware grub gvim
 genfstab -U /mnt >/mnt/etc/fstab
 
-echo $disk >/mnt/disk.txt
+echo $DISK >/mnt/Disk.txt
 curl https://albertshaji.github.io/scripts/arch-user.sh >/mnt/arch-user.sh
 chmod +x /mnt/arch-user.sh
 
+curl https://albertshaji.github.io/arch/Pacman.txt >/mnt/Pacman.txt
+curl https://albertshaji.github.io/arch/Python.txt >/mnt/Python.txt
+curl https://albertshaji.github.io/arch/Aur.txt >/mnt/Aur.txt
+
 arch-chroot /mnt
 umount -R /mnt
-swapoff ${disk}3
+swapoff ${DISK}3

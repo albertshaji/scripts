@@ -7,124 +7,40 @@ SHELL="zsh"
 EMAIL="alby@disroot.org"
 HOSTNAME="arch"
 TIMEZONE="Asia/Kolkata"
+HIBERNATION=true
+KERNEL=linux-lts
 
-arch_pack=(
-linux-headers
-base-devel
-networkmanager
-ranger
-alsa
-alsa-utils
-libinput
-xorg-server
-xorg-xinit
-xf86-video-intel
-xorg-xsetroot
-xorg-xbacklight
-xorg-xinput
-xorg-xev
-zsh
-git
-man
-man-pages
-terminus-font
-noto-fonts
-adobe-source-code-pro-fonts
-intel-ucode
-libexif
-imlib2
-neomutt
-sdcv
-zathura
-zathura-pdf-mupdf
-zathura-djvu
-words
-flite
-ntfsprogs
-udisks2
-mpv
-moc
-ffmpeg
-figlet
-gnupg
-pass
-htop
-tree
-w3m
-zip
-unzip
-tar
-feh
-xcape
-neofetch
-wget
-mtpfs
-rclone
-beep
-imagemagick
-fdupes
-redshift
-fprintd
-youtube-dl
-transmission-cli
-pcmanfm
-pandoc
-python-pip
-cairo
-sox
-r tk
-gvfs-mtp
-gnumeric
-texlive-core
-texlive-pictures
-texlive-science
-stellarium
-gimp
-inkscape
-tipp10
-telegram-desktop
-arch-install-scripts
-)
+read -p "Enter a password for the user: " PASS1
+read -p "Re-enter password :" PASS2
+until [ "$PASS1" = "$PASS2" ]
+do
+	unset PASS1 PASS2
+	read -p "Enter a password for the user: " PASS1
+	read -p "Re-enter password :" PASS2
+done
 
-py_pack=(
-numpy
-scipy
-matplotlib
-manimlib
-jupyter
-)
+ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
+hwclock --systohc
 
-aur_pack=(
-brave-bin
-simple-mtpfs
-zoom
-)
+echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
+echo "en_US ISO-8859-1" >> /etc/locale.gen
+locale-gen
 
+echo "LANG=en_US.UTF-8" > /etc/locale.conf
 
-{
-    ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
-    hwclock --systohc
-    echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
-    echo "en_US ISO-8859-1" >> /etc/locale.gen
-    locale-gen
-    echo "LANG=en_US.UTF-8" > /etc/locale.conf
-    echo $HOSTNAME > /etc/hostname
-    grub-install `cat /disk.txt`
-    grub-mkconfig -o /boot/grub/grub.cfg
-}
+echo $HOSTNAME > /etc/hostname
 
+grub-install `cat /Disk.txt`
+sed -i "/GRUB_TIMEOUT_STYLE/c\GRUB_TIMEOUT_STYLE=hidden" /etc/default/grub
+grub-mkconfig -o /boot/grub/grub.cfg
 
-{
-    pacman --noconfirm --needed -Sy ${arch_pack[@]}
-    pip install ${py_pack[@]}
-}
+systemctl enable NetworkManager
 
+pacman --noconfirm --needed -Sy `cat /Pacman.txt`
 
 cd /home
-id -u $USER >/dev/null 2>&1 ||
+[ -d $USER ] &&
 {
-    [ -d $USER ] &&
-    {
     k=(
     .suckless
     .aur
@@ -142,64 +58,68 @@ id -u $USER >/dev/null 2>&1 ||
     mkdir $USER
     chmod 700 $USER
     mv "${k[@]/#/${USER}-old/}" $USER
-    }
 
-    useradd -m -g wheel -s /bin/$SHELL $USER
-    echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+    chown -Rv $USER:wheel /home/$USER-old
+    chown -Rv $USER:wheel /home/$USER
 }
+
+useradd -m -g wheel -s /bin/$SHELL $USER
+echo "$USER:$PASS1" | chpasswd
+echo "root:$PASS1" | chpasswd
+echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 cd $USER
 
+[ -d .scripts ] || git clone https://github.com/albertshaji/scripts.git .scripts
+[ -d .arch ] || git clone https://github.com/albertshaji/arch.git .arch
+export PATH="$PATH:/home/$USER/.scripts"
+config.sh
+chown -Rv $USER:wheel /home/$USER
 
-{
-    [ -d .scripts ] || git clone https://github.com/albertshaji/scripts.git .scripts
-    [ -d .arch ] || git clone https://github.com/albertshaji/arch.git .arch
-    export PATH="$PATH:/home/$USER/.scripts"
-    config.sh
-    chown -Rv $USER:wheel /home/$USER
-
-    sed -i "/GRUB_TIMEOUT_STYLE/c\GRUB_TIMEOUT_STYLE=hidden" /etc/default/grub
-    sed -i "/GRUB_CMDLINE_LINUX_DEFAULT/c\GRUB_CMDLINE_LINUX_DEFAULT=\"linux /boot/vmlinuz-linux resume=`cat /disk.txt`3 quiet splash\"" /etc/default/grub
+if $HIBERNATION
+then
+    sed -i "/GRUB_CMDLINE_LINUX_DEFAULT/c\GRUB_CMDLINE_LINUX_DEFAULT=\"$KERNEL /boot/vmlinuz-$KERNEL resume=`cat /Disk.txt`3 quiet splash\"" /etc/default/grub
     grub-mkconfig -o /boot/grub/grub.cfg
     sed -i "/HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)/c\HOOKS=(base udev autodetect modconf block filesystems keyboard resume fsck)" /etc/mkinitcpio.conf
     mkinitcpio -P
+fi
 
+if pacman -Qs git >/dev/null
+then
     sudo -u $USER git config --global user.name $USER
     sudo -u $USER git config --global user.email $EMAIL
     sudo -u $USER git config --global credential.helper store
+fi
 
-    systemctl enable NetworkManager
+if pacman -Qs syncthing >/dev/null
+then
+    systemctl enable syncthing@$USER
+fi
 
+if pacman -Qs ranger >/dev/null
+then
     sudo -u ranger --copy-config=scope
-}
+fi
 
-
+[ -d .suckless ] &&
 {
-    [ -d .suckless ] &&
-    {
     cd .suckless
     for p in `ls`
     do
-    make -C $p clean install
-    done ||
-    sudo -u $USER aur.sh st dwm
+	    make -C $p clean install
+    done
     cd ..
-    }
-
-    sudo -u $USER aur.sh ${aur_pack[@]}
 }
 
+if pacman -Qs python-pip >/dev/null
+then
+    pip install `cat /Python.txt`
+fi
 
-[ `passwd -S | awk '{print $2}'` = 'P' ] ||
-{
-    echo
-    echo "Create password for Root."
-    passwd
-    echo
-    echo "Create password for" $USER.
-    passwd $USER
-    echo
-    echo "Remember to run: \"fprintd-enroll\" after login!"
-    echo
-}
+sudo -u $USER aur.sh `cat /Aur.txt`
+
+if pacman -Qs fprintd >/dev/null
+then
+	echo "Run \"fprintd-enroll\" after login!"
+fi
 
 figlet "Installation Completed!"
