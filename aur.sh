@@ -1,7 +1,9 @@
 #!/bin/bash
 
+AURDIR=$HOME/.aur
+
 [ `whoami` = 'root' ] && exit
-cd ~/.aur
+cd $AURDIR
 while [ ! $# -eq 0 ]
 do
     if [ -d "$1" ]

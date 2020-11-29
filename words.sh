@@ -6,7 +6,7 @@ do
     [ -n "$w" ] &&
     grep -qw "$w" /usr/share/dict/british-english &&
     {
-        echo "$w" >> doc/.words
+        echo "$w" >> $WORDS
         sdcv -n -u 'WordNet' -u 'Moby Thesaurus II' $w |
         dmenu -l 20
     } || break

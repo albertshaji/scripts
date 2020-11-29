@@ -7,8 +7,14 @@ SHELL="zsh"
 EMAIL="alby@disroot.org"
 HOSTNAME="arch"
 TIMEZONE="Asia/Kolkata"
-HIBERNATION=true
 KERNEL=linux-lts
+SCRIPTS=code/LinuxScripts
+CONFIG=code/LinuxConfig
+SUCKLESS=code/Suckless
+HIBERNATION=true
+AUTOLOGIN=true
+BEEP=true
+BLUETOOTHOFF=true
 
 read -p "Enter a password for the user: " PASS1
 read -p "Re-enter password :" PASS2
@@ -42,14 +48,10 @@ cd /home
 [ -d $USER ] &&
 {
     k=(
-    .suckless
     .aur
-    .scripts
-    .arch
     .gnupg
     .password-store
     .stardict
-    .vimtex
     .vim
     `ls $USER`
     )
@@ -69,10 +71,9 @@ echo "root:$PASS1" | chpasswd
 echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 cd $USER
 
-[ -d .scripts ] || git clone https://github.com/albertshaji/scripts.git .scripts
-[ -d .arch ] || git clone https://github.com/albertshaji/arch.git .arch
-export PATH="$PATH:/home/$USER/.scripts"
-config.sh
+[ -d $SCRIPTS ] || git clone https://github.com/albertshaji/${SCRIPTS}.git
+[ -d $CONFIG ] || git clone https://github.com/albertshaji/${CONFIG}.git
+sh ${SCRIPTS}/config.sh
 chown -Rv $USER:wheel /home/$USER
 
 if $HIBERNATION
@@ -83,41 +84,64 @@ then
     mkinitcpio -P
 fi
 
-if pacman -Qs git >/dev/null
+if pacman -Qe git &>/dev/null
 then
     sudo -u $USER git config --global user.name $USER
     sudo -u $USER git config --global user.email $EMAIL
     sudo -u $USER git config --global credential.helper store
 fi
 
-if pacman -Qs syncthing >/dev/null
+if pacman -Qe syncthing &>/dev/null
 then
     systemctl enable syncthing@$USER
 fi
 
-if pacman -Qs ranger >/dev/null
+if pacman -Qe ranger &>/dev/null
 then
     sudo -u ranger --copy-config=scope
 fi
 
-[ -d .suckless ] &&
+[ -d $SUCKLESS ] &&
 {
-    cd .suckless
+    cd $SUCKLESS
     for p in `ls`
     do
 	    make -C $p clean install
     done
-    cd ..
+    cd
 }
 
-if pacman -Qs python-pip >/dev/null
+if pacman -Qe python-pip &>/dev/null
 then
     pip install `cat /Python.txt`
 fi
 
-sudo -u $USER aur.sh `cat /Aur.txt`
+sudo -u $USER sh ${SCRIPTS}/aur.sh `cat /Aur.txt`
 
-if pacman -Qs fprintd >/dev/null
+if $AUTOLOGIN
+then
+    FILE=/etc/systemd/system/getty@tty1.service.d/override.conf
+    echo "[Service]" > $FILE
+    echo "ExecStart=" >> $FILE
+    echo "ExecStart=-/usr/bin/agetty -n -o $USER --noclear %I \$TERM" >> $FILE
+    unset FILE
+fi
+
+if $BEEP
+then
+    FILE=/usr/lib/udev/rules.d/70-pcspkr-beep.rules
+    echo "ACTION==\"add\", SUBSYSTEM==\"input\", ATTRS{name}==\"PC Speaker\", ENV{DEVNAME}!=\"\", TAG+=\"uaccess\"" > $FILE
+    unset FILE
+fi
+
+if $BLUETOOTHOFF
+then
+    FILE=/etc/udev/rules.d/50-bluetooth.rules
+    echo "SUBSYSTEM==\"rfkill\", ATTR{type}==\"bluetooth\", ATTR{state}=\"0\"" > $FILE
+    unset FILE
+fi
+
+if pacman -Qe fprintd &>/dev/null
 then
 	echo "Run \"fprintd-enroll\" after login!"
 fi

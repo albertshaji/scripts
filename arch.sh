@@ -82,7 +82,7 @@ pacstrap /mnt base $KERNEL ${KERNEL}-headers linux-firmware grub gvim networkman
 genfstab -U /mnt >/mnt/etc/fstab
 
 echo $DISK >/mnt/Disk.txt
-curl https://albertshaji.github.io/scripts/arch-user.sh >/mnt/arch-user.sh
+curl https://albertshaji.github.io/LinuxScripts/arch-user.sh >/mnt/arch-user.sh
 chmod +x /mnt/arch-user.sh
 
 curl https://albertshaji.github.io/arch/Pacman.txt >/mnt/Pacman.txt

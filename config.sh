@@ -1,6 +1,9 @@
 #!/bin/zsh
 
-[ -d .arch ] || exit
+CONFIG=code/LinuxConfig
+SCRIPTS=code/LinuxScripts
+
+[ -d $CONFIG ] || exit
 
 if  [ `whoami` = 'root' ]
 then
@@ -18,12 +21,18 @@ else
     }
 fi
 
-for f in `ls .arch -I '*[[:upper:]]*'`
+for f in `ls $CONFIG -I "*.txt" -I LICENSE -I README.md`
 do
-    t=`head -n 1 .arch/$f | cut -c 2-`
-    deploy ".arch/$f" "$t"
+    app=`head -n 1 ${CONFIG}/$f | awk '{print $3}'`
+    if pacman -Qe $app &>/dev/null
+    then
+        t=`head -n 1 ${CONFIG}/$f | awk '{print $2}'`
+        deploy "${CONFIG}/$f" "$t"
+    else
+        echo "Skipped for [$app] Package."
+    fi
 done
 
 deploy "doc/.bmarks" ".config/BraveSoftware/Brave-Browser/Default/Bookmarks"
 deploy "doc/.rclone" ".config/rclone/rclone.conf"
-deploy ".scripts/sxiv.sh" ".config/sxiv/exec/key-handler"
+deploy "${SCRIPTS}/sxiv.sh" ".config/sxiv/exec/key-handler"
