@@ -1,5 +1,4 @@
 #!/bin/bash
-
 n=`ls screenshot*.png | wc -l`
 n=$(( $n  + 1 ))
 while true
@@ -12,3 +11,4 @@ do
     fi
 done
 imlib2_grab screenshot$n.png
+Imlib2_grab "$HOME/screenshot-$(date '+%m%d-%H%M%S').png"

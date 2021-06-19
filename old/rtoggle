@@ -1,5 +1,4 @@
-#!/bin/bash
-
+#!/bin/zsh
 if [ -e .ct ]
 then
     redshift -x >/dev/null

@@ -1,5 +1,4 @@
 #!/bin/bash
-
 note_r() { dzen2 -fn "xos4 Terminus-10" -fg "#FF0000" -p 5 & beep -f 1000; }
 note_g() { dzen2 -fn "xos4 Terminus-10" -fg "#83BF15" -p 5 & beep -f 1500; }
 note_o() { dzen2 -fn "xos4 Terminus-10" -fg "#FFA500" -p 5 & beep -f 2000; }
@@ -9,7 +8,13 @@ case "$1" in
 +s)
     status () {
     printf " "
-    nm-online -t 0 && printf "W  "
+#    nm-online -t 0 && printf "N  "
+    nm-online -t 0 &&
+    {
+        printf "N:"
+        [ -s .netspeed ] && cat .iinetspeed
+        printf "M/s  "
+    }
     [ `cat /sys/class/power_supply/BAT0/status` = 'Charging' ] && printf ">>"
     printf "B:$(cat /sys/class/power_supply/BAT0/capacity)%%  "
     printf "C:$((`cat /sys/class/thermal/thermal_zone0/temp`/1000))°C "
@@ -184,13 +189,25 @@ case "$1" in
     do
         if nm-online -t 0
         then
-            curl 'wttr.in/?format=%C+%p+%t' >.wttr 2>/dev/null
+          #  curl "wttr.in/`cat .MyLocation`?format=%C+%p+%t" >.wttr 2>/dev/null
+
+            Url="wttr.in/`cat .MyLocation`"
+            w=`curl -s "$Url?format=%C"` &&
+            if [ ${#w} -ge 23 ]
+            then
+                echo $w | cut -z -c -20 >.wttr
+                echo -n "... " >>.wttr
+            else
+                echo -n "$w " >.wttr
+            fi
+            curl -s "$Url?format=%p+%t" >>.wttr 2>/dev/null
+
             cat .wttr | grep -q 'Unknown location' && rm .wttr
-            sleep 18m
+            sleep 10m
         else
             [ -e .wttr ] &&
             {
-                sleep 18m
+                sleep 10m
                 nm-online -t 0 ||
                 rm .wttr
             }
@@ -198,12 +215,17 @@ case "$1" in
         sleep 2m
     done &
     ;;
-
++i)
+    echo "Internet speed meter stated"
+    nm-online -t 0 &&
+    speedtest --simple | awk '{print $2}' | tail -n 2 | tr '\n' ' ' >.netspeed
+    ;;
 +)
     dog.sh +s
     dog.sh +b
     dog.sh +t
     dog.sh +w &
+    dog.sh +i &
    # dog.sh +p &
     ;;
 

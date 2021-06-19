@@ -1,0 +1,9 @@
+#!/bin/zsh
+
+KERNEL=linux-lts
+DISK=$(cat /disk.txt)
+
+sudo sed -i "/GRUB_CMDLINE_LINUX_DEFAULT/c\GRUB_CMDLINE_LINUX_DEFAULT=\"$KERNEL /boot/vmlinuz-$KERNEL resume=$DISK3 quiet splash\"" /etc/default/grub
+sudo grub-mkconfig -o /boot/grub/grub.cfg
+sudo sed -i "/HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)/c\HOOKS=(base udev autodetect modconf block filesystems keyboard resume fsck)" /etc/mkinitcpio.conf
+sudo mkinitcpio -P

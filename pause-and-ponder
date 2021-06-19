@@ -1,0 +1,10 @@
+#!/bin/zsh
+
+while true
+do
+    sleep 25m
+    B=`xbacklight -get`
+    xbacklight -set 0
+    sleep 5m
+    xbacklight -set $B
+done &

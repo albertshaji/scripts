@@ -1,5 +1,4 @@
 #!/bin/bash
-
 t="SynPS/2 Synaptics TouchPad"
 if [ -e .tt ]
 then

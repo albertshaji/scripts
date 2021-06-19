@@ -1,6 +1,6 @@
 #!/bin/bash
 
-inputs=(
+Apps=(
 moc
 mpv
 brave
@@ -17,13 +17,12 @@ ffmpeg
 vim
 )
 
-sel=`printf "%s\n" ${inputs[@]} | dmenu` || exit
+Selection=`printf "%s\n" ${Apps[@]} | dmenu` || exit
 
 {
-printf "%s\n" ${inputs[@]} | grep -qw "$sel" &&
-echo "$sel:"
+echo "$Selection:"
 
-case "$sel" in
+case "$Selection" in
 moc) cat << _PAGE
 
     tab         : FILES, playlist
@@ -465,7 +464,7 @@ _PAGE
 ;;
 
 *)
-    man $sel 2>/dev/null || echo "Manual not found." ;;
+    man $Selection 2>/dev/null || echo "Manual not found." ;;
 
 esac
 } | dmenu -l 20 >/dev/null

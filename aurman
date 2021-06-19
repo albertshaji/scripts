@@ -1,0 +1,42 @@
+#!/bin/zsh
+
+DIR=$HOME/code/aur
+
+if [ -z $1 ]
+then
+    echo "Usage: `basename $0` --update | package-name(s)>"
+    exit
+elif [ `whoami` = 'root' ]
+then
+    echo "Don't run as root"
+    exit
+fi
+
+if ! [ -d $DIR ]
+then
+    mkdir -p $DIR
+    echo "$DIR directory created"
+fi
+cd $DIR
+
+if [ "$1" = '--update' ] || [ "$1" = '-u' ]
+then
+    LIST=(`pacman -Qemq`)
+    META='--noconfirm'
+else
+    LIST=($@)
+fi
+
+for p in $LIST
+do
+    if [ -d $p ]
+    then
+        cd $p
+        git pull --rebase
+    else
+        git clone https://aur.archlinux.org/$p.git
+        cd $p
+    fi
+    makepkg -si $META --needed
+    cd ..
+done

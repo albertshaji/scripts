@@ -1,0 +1,15 @@
+#!/bin/zsh
+
+if [ -z $1 ]
+then
+    echo "Usage: `basename $0` WIDTHxHEIGHT X Y"
+    exit
+if
+
+ffmpeg\
+    -f x11grab\
+    -s $1\
+    -video_size cif\
+    -framerate 24\
+    -i :0.0+$2,$3\
+    "$HOME/screen-$(date '+%H%M%S').mkv"

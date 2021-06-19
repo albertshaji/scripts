@@ -1,0 +1,25 @@
+#!/bin/zsh
+
+DIR=$HOME/code/script/first
+
+if [ -d $DIR ]
+then
+    cd $DIR
+    DIR=($(ls))
+else
+    echo "Script directory don't exist"
+    exit
+fi
+
+PEN=()
+for i in $DIR
+do
+    if pacman -Q $i &>/dev/null
+    then
+        echo "Run ./$i"
+    else
+        PEN+=($i)
+    fi
+done
+
+echo "Next script: $PEN"

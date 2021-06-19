@@ -1,0 +1,20 @@
+#!/bin/zsh
+
+old=(`cat $HOME/code/config/pacman.txt`)
+old=(`pacman -Qttq`)
+old_aur=(`cat $HOME/code/config/aur.txt`)
+
+new=(`pacman -Qenq`)
+new_aur=(`pacman -Qemq`)
+
+com=(`printf "%s\n" $new $old | sort | uniq -d`)
+com_aur=(`printf "%s\n" $new_aur $old_aur | sort | uniq -d`)
+
+echo "Removed Packges\n==============="
+printf "%s\n" $old $com | sort | uniq -u
+printf "%s (aur)\n" $old_aur $com_aur | sort | uniq -u
+
+echo
+echo "Added Packges\n============="
+printf "%s\n" $new $com | sort | uniq -u
+printf "%s (aur)\n" $new_aur $com_aur | sort | uniq -u

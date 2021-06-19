@@ -1,0 +1,27 @@
+#!/bin/zsh
+
+URL=(
+#300 "http://allindiaradio.gov.in/radio/live.php?channel=1"
+300 "https://www.facebook.com"
+300 "https://www.instagram.com"
+300 "https://twitter.com"
+900 "https://www.linkedin.com"
+150 "https://web.whatsapp.com"
+150 "https://mail.disroot.org"
+)
+
+for ((i=1; i<${#URL}; i+=2))
+do
+    if ! pgrep brave >/dev/null
+    then
+        exit
+    fi
+
+    brave $URL[i+1] &>/dev/null
+
+    export PID=$$
+    echo "Next" | dzen2 -p 900 -w 70 -x 700 -e 'button1=exec:pkill -P $PID sleep;button3=exit,exec:killall socialmedia' &
+
+    sleep $URL[i]
+    pkill -P $PID dzen2
+done

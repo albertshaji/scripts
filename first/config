@@ -1,0 +1,32 @@
+#!/bin/zsh
+
+DIR=$HOME/code/config
+
+if [ `whoami` = 'root' ]
+then
+    echo "Don't run as root"
+    exit
+fi
+
+if ! [ -d $DIR ]
+then
+    git clone "" $DIR
+fi
+cd $DIR
+
+for from in `ls -I "*.txt" -I LICENSE -I README.md`
+do
+    app=$(head -n 1 $from | awk '{print $3}')
+    if pacman -Qq $app &>/dev/null
+    then
+        to=$(head -n 1 $from | awk '{print $2}')
+        if [ $(echo $to | cut -c 1) = '/' ]
+        then
+            sudo mkdir -p $(dirname $to)
+            echo "sudo cp -v $from $to"
+        else
+            mkdir -p $(dirname $to)
+            echo "cp -v $from $to"
+        fi
+    fi
+done

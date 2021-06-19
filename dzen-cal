@@ -1,0 +1,6 @@
+#!/bin/zsh
+
+while true
+do
+    (date +'%a %d %b'; cal -w) | dzen2 -l 8 -p -tw 90 -sa c -w 210 -x 1226 -ta c -e 'button1=uncollapse;leaveslave=collapse;button3=exit'
+done &

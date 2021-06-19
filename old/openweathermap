@@ -1,0 +1,3 @@
+ #!/bin/bash
+ curl -s "https://api.openweathermap.org/data/2.5/weather?q=`cat .MyLocation`&appid=861181c3f563414f868dc99481a2a465&units=metric" > forecast.json
+ jq ".main .temp" forecast.json

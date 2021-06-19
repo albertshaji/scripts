@@ -1,0 +1,34 @@
+#!/bin/zsh
+
+LOCATION="Dadri"
+FILE=$HOME/.weather
+
+getupdate() {
+    curl -s "wttr.in/$LOCATION?format=%C+%t" >$FILE
+    if [ `wc -w $FILE | awk '{print $1}'` -gt 7 ]
+    then
+        rm $FILE
+    fi
+}
+
+while true
+do
+    if [ -e $FILE ]
+    then
+        if test "`find $FILE -mmin -30`"
+        then
+            :
+        elif nm-online -t 0
+        then
+            getupdate
+        else
+            rm $FILE
+        fi
+    else
+        if nm-online -t 0
+        then
+            getupdate
+        fi
+    fi
+    sleep 2m
+done &

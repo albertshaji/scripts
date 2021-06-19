@@ -1,0 +1,228 @@
+#!/bin/zsh
+
+if [ `whoami` != 'root' ]
+then
+    echo "Run as root"
+    exit
+fi
+
+if [ -e /sys/firmware/efi/efivars ]
+then
+    echo "Efi! Cann't procced"
+    exit
+fi
+
+
+USER="alby"
+SHELL="zsh"
+EMAIL="alby@disroot.org"
+HOSTNAME="arch"
+TIMEZONE="Asia/Kolkata"
+KERNEL=linux-lts
+CONFIG=/home/$USER/code/config
+SCRIPT=/home/$USER/code/script
+SUCKLESS=/home/$USER/code/suckless
+GITUSER="albymath"
+CONFIGSRC="https://${GITUSER}.github.io/config"
+
+
+INSTALL_PACKGES=true
+INSTALL_AUR_PACKGES=true
+INSTALL_SUCKELSS_PACKGES=true
+INSTALL_PYTHONLIBS=true
+INSTALL_MANIM=true
+ENABLE_HIBERNATION=true
+ENABLE_AUTOLOGIN=true
+ENABLE_BEEP=true
+DISABLE_BLUETOOTH=true
+
+
+read "?Enter a password for the user: " PASS1
+read "?Re-enter password :" PASS2
+until [ "$PASS1" = "$PASS2" ]
+do
+	unset PASS1 PASS2
+	read "?Enter a password for the user: " PASS1
+	read "?Re-enter password :" PASS2
+done
+
+
+ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
+hwclock --systohc
+echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
+echo "en_US ISO-8859-1" >> /etc/locale.gen
+locale-gen
+echo "LANG=en_US.UTF-8" > /etc/locale.conf
+echo $HOSTNAME > /etc/hostname
+grub-install `cat /Disk.txt`
+pacman --noconfirm --needed -S grub
+sed -i "/GRUB_TIMEOUT_STYLE/c\GRUB_TIMEOUT_STYLE=hidden" /etc/default/grub
+grub-mkconfig -o /boot/grub/grub.cfg
+pacman --noconfirm --needed -S networkmanager
+systemctl enable NetworkManager
+
+
+if [ -d /home/$USER ]
+then
+    DIR=(aud code dl doc dt phone pic vid)
+    DIR+=(.vim .gnupg .password-store .stardict)
+
+    cd /home
+    mv $USER ${USER}-old
+    mkdir $USER
+    chmod 700 $USER
+
+    for k in $DIR
+    do
+        mv "$USER-old/$k" "$USER/$k"
+    done
+
+    chown -Rv $USER:wheel /home/$USER
+fi
+
+
+pacman --noconfirm --needed -S $SHELL
+useradd -m -g wheel -s /bin/$SHELL $USER
+echo "$USER:$PASS1" | chpasswd
+echo "root:$PASS1" | chpasswd
+echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+
+if $INSTALL_PACKGES
+then
+    PACMAN=(`curl -s $CONFIGSRC/pacman.txt`)
+    pacman --noconfirm --needed -S $PACMAN
+
+    cd /home/$USER
+    [ -d $SCRIPT ] || git clone https://github.com/$GITUSER/$SCRIPT.git
+    [ -d $CONFIG ] || git clone https://github.com/$GITUSER/$CONFIG.git
+    zsh $SCRIPT/config --apply
+    chown -Rv $USER:wheel /home/$USER
+fi
+
+
+if $INSTALL_AUR_PACKGES
+then
+    AUR=(`curl -s $CONFIGSRC/aur.txt`)
+    sudo -u $USER zsh $SCRIPT/aurman $AUR
+fi
+
+
+if $INSTALL_SUCKELSS_PACKGES
+then
+    if [ -d $SUCKLESS ]
+    then
+        cd $SUCKLESS
+        LIST=(dwm st dmenu)
+        for p in $LIST
+        do
+            make -C $p clean install
+        done
+        cd
+    fi
+if
+
+
+if $INSTALL_PYTHONLIBS
+then
+    pacman --noconfirm --needed -S python-pip
+    PYTHON=(`curl -s $CONFIGSRC/python.txt`)
+    pip install --user $PYTHON
+fi
+
+
+if $ENABLE_HIBERNATION
+then
+    sed -i "/GRUB_CMDLINE_LINUX_DEFAULT/c\GRUB_CMDLINE_LINUX_DEFAULT=\"$KERNEL /boot/vmlinuz-$KERNEL resume=`cat /Disk.txt`3 quiet splash\"" /etc/default/grub
+    grub-mkconfig -o /boot/grub/grub.cfg
+    sed -i "/HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)/c\HOOKS=(base udev autodetect modconf block filesystems keyboard resume fsck)" /etc/mkinitcpio.conf
+    mkinitcpio -P
+fi
+
+
+if pacman -Qe git
+then
+    sudo -u $USER git config --global user.name $GITUSER
+    sudo -u $USER git config --global user.email $EMAIL
+    sudo -u $USER git config --global credential.helper store
+fi
+
+
+if pacman -Qe syncthing
+then
+    systemctl enable syncthing@$USER
+fi
+
+
+if pacman -Qe ranger
+then
+    sudo -u ranger --copy-config=scope
+fi
+
+
+if $ENABLE_AUTOLOGIN
+then
+    FILE=/etc/systemd/system/getty@tty1.service.d/override.conf
+    cp $FILE .
+    echo "[Service]" > $FILE
+    echo "ExecStart=" >> $FILE
+    echo "ExecStart=-/usr/bin/agetty -n -o $USER --noclear %I \$TERM" >> $FILE
+    unset FILE
+fi
+
+
+if $ENABLE_BEEP
+then
+    FILE=/usr/lib/udev/rules.d/70-pcspkr-beep.rules
+    cp $FILE .
+    echo "ACTION==\"add\", SUBSYSTEM==\"input\", ATTRS{name}==\"PC Speaker\", ENV{DEVNAME}!=\"\", TAG+=\"uaccess\"" > $FILE
+    unset FILE
+fi
+
+
+if $DISABLE_BLUETOOTH
+then
+    FILE=/etc/udev/rules.d/50-bluetooth.rules
+    cp $FILE .
+    echo "SUBSYSTEM==\"rfkill\", ATTR{type}==\"bluetooth\", ATTR{state}=\"0\"" > $FILE
+    unset FILE
+fi
+
+
+if pacman -Qe fprintd
+then
+	echo "Run \"fprintd-enroll\" after login!"
+fi
+
+
+if pacman -Qe zathura &>/dev/null
+then
+    FILE=/usr/share/applications/org.pwmt.zathura-pdf-mupdf.desktop
+    MIME=(`grep MimeType $FILE | cut -c 10- | tr ';' ' '`)
+    sudo -u $USER xdg-mime default org.pwmt.zathura.desktop $MIME
+    unset FILE MIME
+fi
+
+
+if pacman -Qe sxiv &>/dev/null
+then
+    FILE=/usr/share/applications/sxiv.desktop
+    MIME=(`grep MimeType $FILE | cut -c 10- | tr ';' ' '`)
+    sudo -u $USER xdg-mime default sxiv.desktop $MIME
+    unset FILE MIME
+fi
+
+
+if pacman -Qe pcmanfm &>/dev/null
+then
+    pacman --noconfirm --needed -S gvfs-mtp ffmpegthumbnailer evince ntfs-3g tumbler poppler-glib raw-thumbnailer
+fi
+
+
+if INSTALL_MANIM
+then
+    pacman --noconfirm --needed -S python-pip ffmpeg cairo texlive-most
+    pip install --user manim
+fi
+
+figlet "Done"

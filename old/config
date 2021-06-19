@@ -1,0 +1,43 @@
+#!/bin/zsh
+
+CONFIG=code/config
+SCRIPT=code/script
+
+[ -d $CONFIG ] || exit
+
+if [ "$1" = '--apply' ]
+then
+    [ `whoami` = 'root' ] || exit
+    deploy()
+    {
+        mkdir -p "`dirname $2`"
+        cp -v "$1" "$2"
+    }
+
+elif [ "$1" = '--save' ]
+then
+    deploy()
+    {
+        cmp --silent "$2" "$1" ||
+        cp -v "$2" "$1"
+    }
+else
+    echo "Usage: config --apply/save"
+    exit
+fi
+
+for FROM in `ls $CONFIG -I "*.txt" -I LICENSE -I README.md`
+do
+    APP=`head -n 1 "$CONFIG/$FROM" | awk '{print $3}'`
+    if pacman -Qq $APP &>/dev/null
+    then
+        TO=`head -n 1 "$CONFIG/$FROM" | awk '{print $2}'`
+        deploy "$CONFIG/$FROM" "$TO"
+    else
+        echo "Skipped for [$APP] Package."
+    fi
+done
+
+# deploy "doc/.bookmark" ".config/BraveSoftware/Brave-Browser/Default/Bookmarks"
+# deploy "doc/.rclone" ".config/rclone/rclone.conf"
+deploy "${SCRIPT}/sxiv-keyhandler" ".config/sxiv/exec/key-handler"

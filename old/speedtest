@@ -1,0 +1,5 @@
+speedtest --json >.speed.json
+down=`jq '.download' .speed.json `
+up=`jq '.upload' .speed.json`
+
+echo "scale=2;$down/8000000; $up/8000000" | bc | tr '\n' ' ' > .speed

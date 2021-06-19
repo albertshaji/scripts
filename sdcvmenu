@@ -1,0 +1,7 @@
+#!/bin/zsh
+
+while true
+do
+    W=$(cat /usr/share/dict/british-english | dmenu) || break
+    sdcv -n -u 'WordNet' -u 'Moby Thesaurus II' $W | dmenu -l 15 || break
+done

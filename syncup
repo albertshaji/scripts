@@ -1,0 +1,1 @@
+rclone sync $1 Drive:$1 -v --track-renames -u --tpslimit=100 --no-update-modtime $2

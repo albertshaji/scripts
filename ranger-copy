@@ -1,0 +1,12 @@
+#!/bin/zsh
+
+if [ -z $1 ] || ! [ -e rangerlist.txt ]
+then
+    echo "Usage: `basename $0` DESTINATION"
+    echo "Before that, select the file via ranger using 't'(append select) or 'T' (begin new selection)."
+    exit
+fi
+
+while IFS='' read -r LINE || [ -n "$LINE" ]; do
+    rclone copy -v "$LINE" "$1"
+done < rangerlist.txt

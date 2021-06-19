@@ -1,0 +1,23 @@
+#!/bin/zsh
+
+while true
+do
+    read -r BCAP </sys/class/power_supply/BAT0/capacity
+    read -r BSTAT </sys/class/power_supply/BAT0/status
+
+    if [ "$BSTAT" = 'Discharging' ]
+    then
+        if [ "$BCAP" -lt 20 ]
+        then
+            slock &
+            systemctl hibernate
+
+        elif [ "$BCAP" -lt 50 ]
+        then
+            beep -f 2000
+           # echo "Battery Low" | dzen2 -p 5
+            echo "Battery low! Plugin the charger now." | dzen2 -p -e 'button1=exit'
+        fi
+    fi
+    sleep 3m
+done &

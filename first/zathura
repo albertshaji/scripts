@@ -1,0 +1,5 @@
+#!/bin/zsh
+
+FILE=/usr/share/applications/org.pwmt.zathura-pdf-mupdf.desktop
+MIME=(`grep MimeType $FILE | cut -c 10- | tr ';' ' '`)
+xdg-mime default org.pwmt.zathura.desktop $MIME

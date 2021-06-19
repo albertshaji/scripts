@@ -1,10 +1,10 @@
 #!/bin/zsh
 
-[ -n "$1" ] ||
-{
+if [ -z $1 ]
+then
     echo "Usage: `basename $0` DIR [.FORMAT]"
     exit
-}
+fi
 cd "$1" || exit
 
 ext=${2:-.jpg}
@@ -12,7 +12,7 @@ ext=${2:-.jpg}
 new=(`seq -s " " -f %03g$ext 1 $(ls | wc -l)`)
 old=(`ls`)
 
-com=(`printf "%s\n" $new $old | sort | uniq -d `)
+com=(`printf "%s\n" $new $old | sort | uniq -d`)
 
 to=(`printf "%s\n" $new $com | sort | uniq -u`)
 from=(`printf "%s\n" $old $com | sort | uniq -u`)

@@ -1,0 +1,9 @@
+#!/bin/zsh
+
+if [ -z $1 ]
+then
+    echo "Usage: `basename $0` WIDTHxHEIGHT X Y"
+    exit
+fi
+
+import -crop $1+$2+$3 -window root "$HOME/screen-$(date '+%H%M%S').png"

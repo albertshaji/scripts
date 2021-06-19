@@ -1,0 +1,20 @@
+#!/bin/zsh
+
+DIR=$HOME/code/suckless
+APP=(dwm st dmenu)
+
+if ! [ -d $DIR ]
+then
+    mkdir -p $DIR
+fi
+cd $DIR
+
+pacman --noconfirm -needed -S base-devel
+for P in $APP
+do
+    if ! [ -d $P ]
+    then
+        git pull
+    fi
+    sudo make -C $P clean install
+done

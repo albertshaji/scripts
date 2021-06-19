@@ -1,7 +1,7 @@
-#!/bin/bash
-
+#!/bin/zsh
 b=$(xbacklight -get)
-if [ "${b%.*}" = 0 ]; then
+if [ "${b%.*}" = 0 ]
+then
     xbacklight -set 7
 else
     xbacklight -set 0

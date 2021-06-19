@@ -1,0 +1,2 @@
+sudo pacman -Scc
+sudo pacman -Rns $(pacman -Qtdq)
