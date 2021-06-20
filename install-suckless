@@ -9,12 +9,12 @@ then
 fi
 cd $DIR
 
-pacman --noconfirm -needed -S base-devel
+sudo pacman --noconfirm --needed -S base-devel terminus-font
 for P in $APP
 do
     if ! [ -d $P ]
     then
-        git clone https://github.com/albymath/${P}.git
+        git clone "https://github.com/albymath/${P}.git"
     fi
     sudo make -C $P clean install
 done

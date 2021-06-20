@@ -19,13 +19,13 @@ timedatectl set-ntp true
 
 lsblk
 echo
-read -p "Select Disk: " DISK
+read "?Select Disk: " DISK
 DISK=/dev/`basename $DISK`
 
 if $FULLFORMAT
 then
     wipefs -fa $DISK
-cat <<EOF | fDISK $DISK -W always
+cat <<EOF | fdisk $DISK -W always
 o
 n
 p
@@ -52,7 +52,7 @@ w
 EOF
     partprobe
     yes | mkfs.ext4 ${DISK}4
-if
+fi
 
 yes | mkfs.ext4 ${DISK}1
 yes | mkfs.ext4 ${DISK}2
@@ -66,7 +66,7 @@ mount ${DISK}1 /mnt/boot
 mount ${DISK}4 /mnt/home
 swapon ${DISK}3
 
-pacstrap /mnt base $KERNEL ${KERNEL}-headers linux-firmware gvim zsh
+pacstrap /mnt base base-devel $KERNEL linux-firmware nano zsh
 genfstab -U /mnt >/mnt/etc/fstab
 echo $DISK >/mnt/disk.txt
 

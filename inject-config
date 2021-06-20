@@ -1,13 +1,12 @@
 #!/bin/zsh
 
-DIR=$HOME/code/config
-
 if [ `whoami` = 'root' ]
 then
     echo "Don't run as root"
     exit
 fi
 
+DIR=$HOME/code/config
 if ! [ -d $DIR ]
 then
     git clone "https://github.com/albymath/config.git" $DIR
@@ -17,7 +16,7 @@ cd $HOME
 for from in $(ls $DIR -I "*.txt" -I LICENSE -I README.md)
 do
     app=$(head -n 1 $DIR/$from | awk '{print $3}')
-    if pacman -Qq $app &>/dev/null
+    if pacman -Q $app &>/dev/null
     then
         to=$(head -n 1 $DIR/$from | awk '{print $2}')
         if [ $(echo $to | cut -c 1) = '/' ]
@@ -28,5 +27,14 @@ do
             mkdir -pv $(dirname $to)
             cp -v $DIR/$from $to
         fi
+    fi
+done
+
+DIR=$HOME/code/script/app-specific
+for i in $(ls $DIR)
+do
+    if pacman -Q $i &>/dev/null
+    then
+        $DIR/$i
     fi
 done

@@ -17,7 +17,6 @@ USER='alby'
 HOSTNAME='arch'
 TIMEZONE='Asia/Kolkata'
 KERNEL='linux-lts'
-PENDRIVE='--removable'
 
 
 read "?Enter a password for the user: " PASS1
@@ -44,7 +43,8 @@ echo "127.0.0.1 localhost" >/etc/hosts
 
 
 pacman --noconfirm -S grub intel-ucode
-grub-install $(cat /disk.txt) $PENDRIVE --recheck
+# add --removable for installing on removable media
+grub-install $(cat /disk.txt) --recheck
 sed -i "/GRUB_TIMEOUT_STYLE/c\GRUB_TIMEOUT_STYLE=hidden" /etc/default/grub
 grub-mkconfig -o /boot/grub/grub.cfg
 
