@@ -1,1 +1,1 @@
-simple shell scripts to make computer work go faster and easier ;-)
+Simple shell scripts to make computer work go faster and easier ;-)

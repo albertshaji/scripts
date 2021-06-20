@@ -10,23 +10,23 @@ fi
 
 if ! [ -d $DIR ]
 then
-    git clone "" $DIR
+    git clone "https://github.com/albymath/config.git" $DIR
 fi
-cd $DIR
+cd $HOME
 
-for from in `ls -I "*.txt" -I LICENSE -I README.md`
+for from in $(ls $DIR -I "*.txt" -I LICENSE -I README.md)
 do
-    app=$(head -n 1 $from | awk '{print $3}')
+    app=$(head -n 1 $DIR/$from | awk '{print $3}')
     if pacman -Qq $app &>/dev/null
     then
-        to=$(head -n 1 $from | awk '{print $2}')
+        to=$(head -n 1 $DIR/$from | awk '{print $2}')
         if [ $(echo $to | cut -c 1) = '/' ]
         then
-            sudo mkdir -p $(dirname $to)
-            echo "sudo cp -v $from $to"
+            sudo mkdir -pv $(dirname $to)
+            sudo cp -v $DIR/$from $to
         else
-            mkdir -p $(dirname $to)
-            echo "cp -v $from $to"
+            mkdir -pv $(dirname $to)
+            cp -v $DIR/$from $to
         fi
     fi
 done
