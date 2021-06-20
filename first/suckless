@@ -14,7 +14,7 @@ for P in $APP
 do
     if ! [ -d $P ]
     then
-        git pull
+        git clone https://github.com/albymath/${P}.git
     fi
     sudo make -C $P clean install
 done
