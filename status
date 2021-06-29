@@ -4,11 +4,19 @@ FILE=$HOME/.weather
 
 getstatus() {
     nm-online -t 0 && printf " N "
-    printf " B:`</sys/class/power_supply/BAT0/capacity`%% "
+
+    printf " "
+    if [ `</sys/class/power_supply/BAT0/status` != 'Discharging' ]
+    then
+        printf "+"
+    fi
+    printf "B:`</sys/class/power_supply/BAT0/capacity`%% "
+
     if [ -e $FILE ] && test "`find $FILE -mmin -30`"
     then
         printf " `<$FILE` "
     fi
+
     printf " `date +'%a %d %b %R'`"
 }
 
