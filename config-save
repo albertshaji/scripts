@@ -1,6 +1,7 @@
 #!/bin/zsh
 
-DIR=$HOME/code/config
+cd
+DIR=code/config
 
 if [ `whoami` = 'root' ]
 then

@@ -1,0 +1,23 @@
+#!/bin/zsh
+
+while true
+do
+    read -r TEM </sys/class/thermal/thermal_zone0/temp
+    if [ $TEM -gt 70000 ]
+    then
+        echo "System temparature high!" | dzen2 -p -e 'button1=exit'
+    fi
+    if [ $TEM -gt 90000 ]
+    then
+        echo "System temparature high! Let's put the system to sleep for 5 minutes" | dzen2 -p -e 'button1=exit' &
+        sleep 10
+        sudo rtcwake -m mem -s 240
+
+        T=$((`cat /sys/class/thermal/thermal_zone0/temp`/1000))
+        if [ $T -gt 90000 ]
+        then
+            systemctl hibernate
+        fi
+    fi
+    sleep 3m
+done &

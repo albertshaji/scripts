@@ -1,0 +1,6 @@
+#!/bin/zsh
+# turn off wifi if inactive
+
+sleep 120
+nmcli -f active dev wifi | grep -q 'yes' ||
+sudo rfkill block wlan
