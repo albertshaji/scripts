@@ -1,1 +1,1 @@
-rclone sync Drive:$1 $1 -v --track-renames -u --tpslimit=100 --no-update-modtime --backup-dir $HOME/.local/share/Trash/files/
+rclone sync Drive:$HOME/$1 $1 -v --track-renames -u --tpslimit=100 --no-update-modtime --backup-dir $HOME/.local/share/Trash/files/

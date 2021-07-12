@@ -1,8 +1,8 @@
 #!/bin/zsh
 
-old=(`cat $HOME/code/config/pacman.txt`)
-old=(`pacman -Qttq`)
-old_aur=(`cat $HOME/code/config/aur.txt`)
+cd
+old=(`cat code/config/pacman.txt`)
+old_aur=(`cat code/config/aur.txt`)
 
 new=(`pacman -Qenq`)
 new_aur=(`pacman -Qemq`)

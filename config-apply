@@ -1,14 +1,11 @@
 #!/bin/zsh
 
-if [ `whoami` = 'root' ]
-then
-    echo "Don't run as root"
-    exit
-fi
-
-cd
 DIR=code/config
 
+set -e
+test $(whoami) != 'root'
+
+cd
 if ! [ -d $DIR ]
 then
     mkdir -p $DIR

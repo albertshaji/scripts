@@ -1,5 +1,5 @@
 #!/bin/zsh
-# turn off wifi if inactive
+# turn off wifi if inactive for 2 minutes since system boot
 
 sleep 120
 nmcli -f active dev wifi | grep -q 'yes' ||

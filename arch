@@ -1,22 +1,16 @@
 #!/bin/zsh
 
 KERNEL=linux-lts
-FULLFORMAT=false
 USER='alby'
 HOSTNAME='arch'
 TIMEZONE='Asia/Kolkata'
+PASS='1998'
+#FULLFORMAT=true      #uncomment to do full format
+#TARGET='--removable' #uncomment to install on pendrive
 
-if [ `whoami` != 'root' ]
-then
-    echo "Run as root"
-    exit
-fi
-
-if [ -e /sys/firmware/efi/efivars ]
-then
-    echo "Efi! Cann't procced"
-    exit
-fi
+set -e
+test $(whoami) = 'root'
+test -e /sys/firmware/efi/efivars
 
 timedatectl set-ntp true
 
@@ -53,7 +47,6 @@ p
 p
 w
 EOF
-    partprobe
     yes | mkfs.ext4 ${DISK}4
 fi
 
@@ -69,18 +62,17 @@ mount ${DISK}1 /mnt/boot
 mount ${DISK}4 /mnt/home
 swapon ${DISK}3
 
-pacstrap /mnt base base-devel $KERNEL linux-firmware nano zsh
+pacstrap /mnt base base-devel \
+    $KERNEL linux-firmware \
+    neovim zsh git \
+    grub intel-ucode \
+    networkmanager
+
 genfstab -U /mnt >/mnt/etc/fstab
+echo $DISK >/mnt/disk.txt
 
 cat <<EOF | arch-chroot /mnt
-read "?Enter a password for the user: " PASS1
-read "?Re-enter password :" PASS2
-until [ "$PASS1" = "$PASS2" ]
-do
-	unset PASS1 PASS2
-	read "?Enter a password for the user: " PASS1
-	read "?Re-enter password :" PASS2
-done
+set -e
 
 ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
 hwclock --systohc
@@ -93,37 +85,32 @@ echo "LANG=en_US.UTF-8" >/etc/locale.conf
 echo $HOSTNAME >/etc/hostname
 echo "127.0.0.1 localhost" >/etc/hosts
 
-pacman --noconfirm -S grub intel-ucode
-echo "add --removable to install on pendrive"
-grub-install $DISK --recheck
+grub-install $DISK --recheck $TARGET
 sed -i "/GRUB_TIMEOUT_STYLE/c\GRUB_TIMEOUT_STYLE=hidden" /etc/default/grub
 grub-mkconfig -o /boot/grub/grub.cfg
 
-pacman --noconfirm -S networkmanager
 systemctl enable NetworkManager
 
 if [ -d /home/$USER ]
 then
     cd /home/$USER
-    OLD=$(date +'%b%d')
-    mkdir $OLD
 
-    DIR=(. .. aud code dl doc dt phone pic vid)
-    DIR+=(.vim .gnupg .password-store .stardict)
+    MY=(. .. aud code dl doc dt phone pic vid)
+    MY+=(.vim .gnupg .password-store .stardict)
 
-    ALL=($(ls -a))
-    MOV=($(printf "%s\n" $DIR $ALL | sort | uniq -u))
+    LS=($(ls -a))
+    CO=($(printf "%s\n" $MY $LS | sort | uniq -d))
+    DF=($(printf "%s\n" $CO $LS | sort | uniq -u))
 
-    mv $MOV $OLD
-    cd
+    TO=$(date +'%b%d')
+    mkdir $TO
+    mv $DF $TO
 fi
 
 useradd -m -g wheel -s /bin/zsh $USER
-echo "$USER:$PASS1" | chpasswd
-echo "root:$PASS1" | chpasswd
+echo "$USER:$PASS" | chpasswd
+echo "root:$PASS" | chpasswd
 echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-
-exit
 EOF
 
 umount -R /mnt

@@ -1,5 +1,7 @@
 #!/bin/zsh
 
+set -e
+
 if [ -z $1 ] || ! [ -e rangerlist.txt ]
 then
     echo "Usage: `basename $0` DESTINATION"

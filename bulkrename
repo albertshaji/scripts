@@ -1,11 +1,13 @@
 #!/bin/zsh
 
+set -e
+
 if [ -z $1 ]
 then
     echo "Usage: `basename $0` DIR [.FORMAT]"
     exit
 fi
-cd "$1" || exit
+cd "$1"
 
 ext=${2:-.jpg}
 

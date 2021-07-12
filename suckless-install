@@ -3,6 +3,8 @@
 DIR=$HOME/code/suckless
 APP=(dwm st dmenu)
 
+set -e
+
 if ! [ -d $DIR ]
 then
     mkdir -p $DIR
@@ -10,10 +12,10 @@ fi
 cd $DIR
 
 sudo pacman --noconfirm --needed -S \
-    base-devel terminus-font \
+    base-devel libxft terminus-font \
     xf86-video-intel xorg-server \
     xorg-xbacklight xorg-xinput \
-    xorg-xinit  xorg-xsetroot
+    xorg-xinit xorg-xsetroot
 
 for P in $APP
 do
