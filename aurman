@@ -3,39 +3,47 @@
 DIR=$HOME/code/aur
 
 set -e
-test $(whoami) != 'root'
 
-if [ -z $1 ]
-then
-    echo "Usage: `basename $0` --update | package-name(s)>"
-    exit
+if [[ $EUID -eq 0 ]]; then
+    echo "Don't run as root!"
+    exit 1
 fi
 
-if ! [ -d $DIR ]
-then
-    mkdir -p $DIR
-    echo "$DIR directory created"
-fi
+if ! [[ -d $DIR ]]; then mkdir -p $DIR; fi
 cd $DIR
 
-if [ "$1" = '--update' ] || [ "$1" = '-u' ]
-then
-    LIST=(`pacman -Qemq`)
-    ALSO='--noconfirm'
-else
-    LIST=($@)
-fi
-
-for p in $LIST
+APP=()
+ARG=()
+while [[ $# -ne 0 ]]
 do
-    if [ -d $p ]
+    case "$1" in
+--update|-u)
+
+    APP=($(pacman -Qemq))
+    ARG='--noconfirm'
+    break ;;
+--*)
+
+    ARG+=($1)
+    ;;
+
+*)
+    APP+=($1)
+    esac
+    shift
+done
+
+
+for i in $APP
+do
+    if [[ -d $i ]]
     then
-        cd $p
-        git pull --rebase
+        echo cd $i
+        echo git pull --rebase
     else
-        git clone https://aur.archlinux.org/$p.git
-        cd $p
+        echo git clone https://aur.archlinux.org/$i.git
+        echo cd $i
     fi
-    makepkg -si --needed $ALSO
-    cd ../
+    echo makepkg -si --needed $ARG
+    echo cd ../
 done

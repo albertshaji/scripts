@@ -1,1 +1,2 @@
 sudo -H systemctl enable uwsgi@searx
+sudo -H systemctl start uwsgi@searx

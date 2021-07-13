@@ -5,8 +5,7 @@ APP=(dwm st dmenu)
 
 set -e
 
-if ! [ -d $DIR ]
-then
+if ! [ -d $DIR ]; then
     mkdir -p $DIR
 fi
 cd $DIR

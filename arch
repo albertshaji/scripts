@@ -1,16 +1,16 @@
 #!/bin/zsh
 
 KERNEL=linux-lts
-USER='alby'
-HOSTNAME='arch'
-TIMEZONE='Asia/Kolkata'
-PASS='1998'
-#FULLFORMAT=true      #uncomment to do full format
+USER=alby
+HOSTNAME=arch
+TIMEZONE=Asia/Kolkata
+PASS=1998
+FULLFORMAT=false
 #TARGET='--removable' #uncomment to install on pendrive
 
 set -e
-test $(whoami) = 'root'
-test -e /sys/firmware/efi/efivars
+test $EUID -eq 0
+test ! -e /sys/firmware/efi/efivars
 
 timedatectl set-ntp true
 
@@ -21,7 +21,11 @@ DISK=/dev/`basename $DISK`
 
 if $FULLFORMAT
 then
-    wipefs -fa $DISK
+
+read "?Full partition? (Type:confirm): " REPLY
+test $REPLY = 'confirm'
+
+wipefs -fa $DISK
 cat <<EOF | fdisk $DISK -W always
 o
 n
@@ -47,7 +51,8 @@ p
 p
 w
 EOF
-    yes | mkfs.ext4 ${DISK}4
+yes | mkfs.ext4 ${DISK}4
+
 fi
 
 yes | mkfs.ext4 ${DISK}1
@@ -69,7 +74,25 @@ pacstrap /mnt base base-devel \
     networkmanager
 
 genfstab -U /mnt >/mnt/etc/fstab
+
 echo $DISK >/mnt/disk.txt
+
+cd /mnt/home
+if [[ -d $USER ]]
+then
+    cd $USER
+    MY=(. .. aud code dl doc dt phone pic vid)
+    MY+=(.vim .gnupg .password-store .stardict)
+
+    LS=($(ls -a))
+    CO=($(printf "%s\n" $MY $LS | sort | uniq -d))
+    DF=($(printf "%s\n" $CO $LS | sort | uniq -u))
+
+    TO=$(date +'%b%d')
+    mkdir $TO
+    mv $DF $TO
+    # may be we can create the empty directories for those that aren't there
+fi
 
 cat <<EOF | arch-chroot /mnt
 set -e
@@ -91,26 +114,29 @@ grub-mkconfig -o /boot/grub/grub.cfg
 
 systemctl enable NetworkManager
 
-if [ -d /home/$USER ]
-then
-    cd /home/$USER
-
-    MY=(. .. aud code dl doc dt phone pic vid)
-    MY+=(.vim .gnupg .password-store .stardict)
-
-    LS=($(ls -a))
-    CO=($(printf "%s\n" $MY $LS | sort | uniq -d))
-    DF=($(printf "%s\n" $CO $LS | sort | uniq -u))
-
-    TO=$(date +'%b%d')
-    mkdir $TO
-    mv $DF $TO
-fi
-
 useradd -m -g wheel -s /bin/zsh $USER
 echo "$USER:$PASS" | chpasswd
 echo "root:$PASS" | chpasswd
-echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+echo "%wheel ALL=(ALL) NOPASSWD: ALL" >>/etc/sudoers
+
+mkdir -p /etc/systemd/system/getty@tty1.service.d
+echo "[Service]
+ExecStart=
+ExecStart=-/usr/bin/agetty -n -o $USER --noclear %I \$TERM" >/etc/systemd/system/getty@tty1.service.d/override.conf
+
+echo "Make we can push the below to config flies"
+
+mkdir -p /etc/udev/rules.d
+echo 'ACTION=="add", SUBSYSTEM=="input", ATTRS{name}=="PC Speaker", TAG+="uaccess"' >/etc/udev/rules.d/70-beep.rules
+echo 'SUBSYSTEM=="rfkill", ATTR{type}=="bluetooth", ATTR{state}="0"' >/etc/udev/rules.d/50-bluetooth.rules
+
+mkdir -p /etc/X11/xorg.conf.d
+echo 'Section "InputClass"
+	Identifier "touchpad"
+	Driver "libinput"
+    Option "Tapping" "true"
+    Option "TappingDrag" "true"
+EndSection' >/etc/X11/xorg.conf.d/30-touchpad.conf
 EOF
 
 umount -R /mnt

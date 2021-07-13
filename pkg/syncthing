@@ -1,1 +1,2 @@
 sudo systemctl enable syncthing@$USER
+sudo systemctl start syncthing@$USER

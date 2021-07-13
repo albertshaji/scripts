@@ -1,1 +1,0 @@
-sudo pacman --noconfirm --needed -S gvfs-mtp ffmpegthumbnailer evince ntfs-3g tumbler poppler-glib raw-thumbnailer

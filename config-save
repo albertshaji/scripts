@@ -1,26 +1,23 @@
 #!/bin/zsh
 
-DIR=code/config
-
 set -e
 test $(whoami) != 'root'
 
 cd
-if ! [ -d $DIR ]
-then
-    git clone "https://github.com/albymath/config.git" $DIR
-fi
-
-cd $HOME
-for from in $(ls $DIR -I "*.txt" -I LICENSE -I README.md)
+DIR=code/config
+for F in $(ls $DIR -I "*.txt" -I LICENSE -I README.md)
 do
-    app=$(head -n 1 $DIR/$from | awk '{print $3}')
-    if pacman -Qq $app &>/dev/null
+    H=$(head -n 1 $DIR/$F)
+
+    APP=$(echo $H | awk '{print $3}')
+
+    if pacman -Q $APP &>/dev/null
     then
-        to=$(head -n 1 $DIR/$from | awk '{print $2}')
-        if ! cmp --silent $to $DIR/$from
+        T=$(echo $H | awk '{print $2}')
+
+        if ! cmp --silent $T $DIR/$F
         then
-            cp -v $to $DIR/$from
+            cp -v $T $DIR/$F
         fi
     fi
 done

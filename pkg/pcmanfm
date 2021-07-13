@@ -1,0 +1,1 @@
+sudo pacman --noconfirm --needed -S gvfs-mtp ffmpegthumbnailer ntfs-3g

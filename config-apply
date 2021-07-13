@@ -1,39 +1,37 @@
 #!/bin/zsh
 
-DIR=code/config
-
 set -e
 test $(whoami) != 'root'
 
 cd
-if ! [ -d $DIR ]
-then
-    mkdir -p $DIR
-    git clone "https://github.com/albymath/config.git" $DIR
-fi
-
-for from in $(ls $DIR -I "*.txt" -I LICENSE -I README.md)
+DIR=code/config
+for F in $(ls $DIR -I "*.txt" -I LICENSE -I README.md)
 do
-    app=$(head -n 1 $DIR/$from | awk '{print $3}')
-    if pacman -Q $app &>/dev/null
+    H=$(head -n 1 $DIR/$F)
+
+    APP=$(echo $H | awk '{print $3}')
+
+    if pacman -Q $APP &>/dev/null
     then
-        to=$(head -n 1 $DIR/$from | awk '{print $2}')
-        if [ $(echo $to | cut -c 1) = '/' ]
+        T=$(echo $H | awk '{print $2}')
+
+        if [ $(echo $T | cut -c 1) = '/' ]
         then
-            sudo mkdir -pv $(dirname $to)
-            sudo cp -v $DIR/$from $to
+            sudo mkdir -pv $(dirname $T)
+            sudo cp -v $DIR/$F $T
         else
-            mkdir -pv $(dirname $to)
-            cp -v $DIR/$from $to
+            mkdir -pv $(dirname $T)
+            cp -v $DIR/$F $T
         fi
     fi
 done
 
-DIR=code/script/package
+DIR=code/script/pkg
 for i in $(ls $DIR)
 do
     if pacman -Q $i &>/dev/null
     then
-        $DIR/$i
+        echo "Running script for $i"
+        ./$DIR/$i
     fi
 done
